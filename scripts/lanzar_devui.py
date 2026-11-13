@@ -1,12 +1,15 @@
 """Lanza DevUI (solo localhost) con el workflow didactico de Entrepinares.
 
-Uso (desde la raiz del repositorio, con el entorno virtual activado):
+Uso en Codespaces / Linux (desde la raiz del repositorio):
 
-    python scripts\\lanzar_devui.py --puerto 8091              # con autenticacion
-    python scripts\\lanzar_devui.py --puerto 8091 --sin-auth   # sin autenticacion
+    python scripts/lanzar_devui.py --puerto 8091              # con autenticacion
+    python scripts/lanzar_devui.py --puerto 8091 --sin-auth   # sin autenticacion
 
 Con autenticacion, define antes un token propio en esa terminal:
-    $env:DEVUI_AUTH_TOKEN = [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
+    export DEVUI_AUTH_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+
+(En Windows/PowerShell: $env:DEVUI_AUTH_TOKEN = "<token propio>" y las mismas
+rutas con "/" funcionan igual.)
 
 DevUI escucha SOLO en 127.0.0.1. Este script solo carga el archivo .env (para
 que el endpoint de Foundry este disponible) y llama a la funcion

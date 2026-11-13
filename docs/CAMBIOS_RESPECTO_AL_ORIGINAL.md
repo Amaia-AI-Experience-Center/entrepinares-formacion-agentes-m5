@@ -30,9 +30,11 @@ Alternativas si no se pudiera crear una aplicación: un cliente basado en API ke
 - **Lock para Linux** (`requirements-codespaces.lock.txt`, 97 paquetes): resuelto con `uv` para `manylinux_2_28` / Python 3.13 usando el lock de Windows como restricciones. Las versiones coinciden con el lock de Windows (incluidas las de Microsoft Agent Framework); solo se añaden `uvloop`, `pexpect` y `ptyprocess` (propios de Linux) y no hay `pywin32`/`pywinpty`/`colorama`. Se ha dejado fuera JupyterLab (los cuadernos se ejecutan en VS Code) y los paquetes de *hosting* y telemetría del lock de Windows, que el workflow no usa.
 - El lock de Windows (`requirements-notebook.lock.txt`, 184 paquetes) **no** se ha modificado.
 
-## Archivos copiados sin cambios (idénticos por SHA-256 al original)
+## Archivos copiados sin cambios de contenido
 
-`fuente_kev.py`, `inventario.py`, `priorizacion.py`, `correlacion.py`, `generar_informe.py`, `generar_html.py`, `cribado_kev.py`, `novedades_kev.py` y los ocho archivos de `datos/`: `inventario_demo.csv`, `kev_demo.json`, `cisa_kev_cache.json`, `cribado_kev.json`, `novedades_kev.json`, `evaluacion_nvd_piloto.json`, `historial_kev/catalogo_referencia.json`, `historial_kev/novedades_2026.10.28_a_2026.10.29.json`.
+`fuente_kev.py`, `inventario.py`, `priorizacion.py`, `correlacion.py`, `generar_informe.py`, `generar_html.py`, `cribado_kev.py`, `novedades_kev.py`: el código es idéntico al original; **solo cambian los finales de línea**: el repositorio los guarda con LF (`.gitattributes`: `*.py text eol=lf`), por lo que su SHA-256 en Linux **no** coincide byte a byte con el de los originales de Windows (que usan CRLF).
+
+Los ocho archivos de `datos/` **sí** son idénticos por SHA-256 al original (`.gitattributes` los marca `-text` para que Git no los convierta; conservan sus finales de línea CRLF, que Python lee sin problema en Linux): `inventario_demo.csv`, `kev_demo.json`, `cisa_kev_cache.json`, `cribado_kev.json`, `novedades_kev.json`, `evaluacion_nvd_piloto.json`, `historial_kev/catalogo_referencia.json`, `historial_kev/novedades_2026.10.28_a_2026.10.29.json`.
 
 Los datos son: un inventario **ficticio** y una copia del catálogo público CISA KEV (versión 2026.10.30, obtenida el 3 de noviembre de 2026) que se queda **desactualizada a propósito**: las descargas están bloqueadas.
 
