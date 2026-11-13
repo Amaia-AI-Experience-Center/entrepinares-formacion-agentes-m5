@@ -1,0 +1,58 @@
+{
+  "source": "CISA KEV - copia local",
+  "catalogVersion": "2026.10.28",
+  "dateReleased": "2026-10-28T19:00:04.8077Z",
+  "snapshotFile": "cisa_kev_20261029_100405Z.json",
+  "count": 3,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2023-27350",
+      "vendorProject": "PaperCut",
+      "product": "MF/NG",
+      "vulnerabilityName": "PaperCut MF/NG Improper Access Control Vulnerability",
+      "dateAdded": "2023-04-21",
+      "shortDescription": "PaperCut MF/NG contains an improper access control vulnerability within the SetupCompleted class that allows authentication bypass and code execution in the context of system.",
+      "requiredAction": "Apply updates per vendor instructions.",
+      "dueDate": "2023-05-12",
+      "knownRansomwareCampaignUse": "Known",
+      "forensicTriage": "No",
+      "notes": "https://www.papercut.com/kb/Main/PO-1216-and-PO-1219;  https://nvd.nist.gov/vuln/detail/CVE-2023-27350",
+      "cwes": [
+        "CWE-284"
+      ]
+    },
+    {
+      "cveID": "CVE-2024-3400",
+      "vendorProject": "Palo Alto Networks",
+      "product": "PAN-OS",
+      "vulnerabilityName": "Palo Alto Networks PAN-OS Command Injection Vulnerability",
+      "dateAdded": "2024-04-12",
+      "shortDescription": "Palo Alto Networks PAN-OS GlobalProtect feature contains a command injection vulnerability that allows an unauthenticated attacker to execute commands with root privileges on the firewall.",
+      "requiredAction": "Apply mitigations per vendor instructions as they become available. Otherwise, users with vulnerable versions of affected devices should enable Threat Prevention IDs available from the vendor. See the vendor bulletin for more details and a patch release schedule.",
+      "dueDate": "2024-04-19",
+      "knownRansomwareCampaignUse": "Known",
+      "forensicTriage": "No",
+      "notes": "https://security.paloaltonetworks.com/CVE-2024-3400 ;   https://nvd.nist.gov/vuln/detail/CVE-2024-3400",
+      "cwes": [
+        "CWE-20",
+        "CWE-77"
+      ]
+    },
+    {
+      "cveID": "CVE-2016-8562",
+      "vendorProject": "Siemens",
+      "product": "SIMATIC CP",
+      "vulnerabilityName": "Siemens SIMATIC CP 1543-1 Improper Privilege Management Vulnerability",
+      "dateAdded": "2022-03-03",
+      "shortDescription": "An improper privilege management vulnerability exists within the Siemens SIMATIC Communication Processor (CP) that allows a privileged attacker to remotely cause a denial of service.",
+      "requiredAction": "Apply updates per vendor instructions.",
+      "dueDate": "2022-03-24",
+      "knownRansomwareCampaignUse": "Unknown",
+      "forensicTriage": "No",
+      "notes": "https://nvd.nist.gov/vuln/detail/CVE-2016-8562",
+      "cwes": [
+        "CWE-20"
+      ]
+    }
+  ]
+}

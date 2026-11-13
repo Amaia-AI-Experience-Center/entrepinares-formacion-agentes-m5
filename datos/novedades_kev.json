@@ -1,0 +1,40 @@
+{
+  "fecha_comparacion": "2026-11-03T07:34:50.222093+00:00",
+  "version_referencia": "2026.10.29",
+  "version_actual": "2026.10.30",
+  "modo_fuente": "descarga",
+  "total_anterior": 1764,
+  "total_actual": 1766,
+  "resumen": {
+    "nuevas": 2,
+    "modificadas": 0,
+    "retiradas": 0
+  },
+  "coincidencias_inventario": {
+    "cves_candidatas": 0,
+    "pares_candidatos": 0,
+    "cves_solo_fabricante": 0,
+    "pares_solo_fabricante": 0,
+    "candidatos": [],
+    "pendientes_fabricante": []
+  },
+  "nuevas": [
+    {
+      "cve": "CVE-2026-111357",
+      "fabricante": "Ivanti",
+      "producto": "Connect Secure",
+      "fecha_inclusion": "2026-10-30",
+      "descripcion": "Ivanti Connect Secure contains a missing authentication for critical function vulnerability that could allow a local authenticated attacker to escalate their privileges. This vulnerability can be chained with CVE-2026-104935 and CVE-2026-118527."
+    },
+    {
+      "cve": "CVE-2026-118527",
+      "fabricante": "Ivanti",
+      "producto": "Connect Secure",
+      "fecha_inclusion": "2026-10-30",
+      "descripcion": "Ivanti Connect Secure contains a generation of predictable numbers or identifiers vulnerability that allows a remote authenticated attacker to upload files with attacker-controlled content to a known location on disk. This vulnerability can be chained with CVE-2026-104935 and CVE-2026-111357."
+    }
+  ],
+  "modificadas": [],
+  "retiradas": [],
+  "advertencia": "Son cambios del catálogo CISA. No confirman afectación de los activos."
+}

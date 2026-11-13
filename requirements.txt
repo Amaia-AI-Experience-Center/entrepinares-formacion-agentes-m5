@@ -1,0 +1,11 @@
+# Dependencias DIRECTAS del workflow (referencia; Python 3.13). Para instalar usa
+# requirements-notebook.lock.txt (versiones exactas, incluye JupyterLab).
+agent-framework-core==1.23.0
+agent-framework-devui==1.0.0b261030
+agent-framework-foundry==1.15.0
+agent-framework-openai==1.17.0
+agent-framework-orchestrations==1.4.0
+azure-identity==1.27.0
+azure-storage-blob==12.31.0
+mistune==3.4.0
+pydantic==2.14.1

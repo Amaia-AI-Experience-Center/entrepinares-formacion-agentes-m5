@@ -1,0 +1,12 @@
+asset_id,nombre,centro,tipo,fabricante,producto,version,criticidad,responsable,configuracion
+IT-001,Servidor de impresion central,Oficinas centrales,IT,PaperCut,PaperCut MF,22.0.8,alta,Equipo Sistemas,servidor_aplicacion
+IT-002,Servidor de impresion norte,Planta Norte,IT,PaperCut,PaperCut NG,22.0.9,media,Soporte IT,servidor_aplicacion
+IT-003,Servidor de impresion sur,Planta Sur,IT,PaperCut,PaperCut MF,desconocida,media,Soporte IT,servidor_aplicacion
+IT-004,Firewall perimetral,Oficinas centrales,IT,Palo Alto Networks,PAN-OS,11.1.2,alta,Equipo Redes,globalprotect_si
+IT-005,Firewall planta norte,Planta Norte,IT,Palo Alto Networks,PAN-OS,11.1.2,alta,Equipo Redes,globalprotect_desconocido
+IT-006,Firewall planta sur,Planta Sur,IT,Palo Alto Networks,PAN-OS,11.1.2-h3,alta,Equipo Redes,globalprotect_si
+OT-001,Pasarela industrial linea A,Planta Norte,OT,Siemens,SIMATIC CP 1543-1,2.0.27,alta,Automatizacion Industrial,snmp_desconocido
+OT-002,Pasarela industrial linea B,Planta Sur,OT,Siemens,SIMATIC CP 1543-1,2.0.28,alta,Automatizacion Industrial,snmp_desconocido
+OT-003,Pasarela industrial almacen,Centro Logistico,OT,Siemens,SIMATIC CP 1543-1,desconocida,media,Automatizacion Industrial,snmp_desconocido
+IT-007,Servidor de aplicaciones,Oficinas centrales,IT,Microsoft,Windows Server 2022,21H2,media,Equipo Sistemas,no_aplica
+OT-004,Controlador linea envasado,Planta Norte,OT,Siemens,SIMATIC S7-1500,3.0,alta,Automatizacion Industrial,no_aplica

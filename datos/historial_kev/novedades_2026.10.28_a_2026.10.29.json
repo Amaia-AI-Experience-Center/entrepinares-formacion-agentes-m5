@@ -1,0 +1,40 @@
+{
+  "fecha_comparacion": "2026-10-30T12:17:52.507259+00:00",
+  "version_referencia": "2026.10.28",
+  "version_actual": "2026.10.29",
+  "modo_fuente": "cache",
+  "total_anterior": 1762,
+  "total_actual": 1764,
+  "resumen": {
+    "nuevas": 2,
+    "modificadas": 0,
+    "retiradas": 0
+  },
+  "coincidencias_inventario": {
+    "cves_candidatas": 0,
+    "pares_candidatos": 0,
+    "cves_solo_fabricante": 0,
+    "pares_solo_fabricante": 0,
+    "candidatos": [],
+    "pendientes_fabricante": []
+  },
+  "nuevas": [
+    {
+      "cve": "CVE-2026-76418",
+      "fabricante": "Cisco",
+      "producto": "Secure Firewall ASA Software and Cisco Secure FTD Software",
+      "fecha_inclusion": "2026-10-29",
+      "descripcion": "Cisco Secure Firewall ASA Software and Cisco Secure FTD Software contains an unchecked return value to NULL pointer dereference vulnerability that could allow an unauthenticated, remote attacker to cause the device to reload unexpectedly, resulting in a denial of service (DoS) condition."
+    },
+    {
+      "cve": "CVE-2026-97229",
+      "fabricante": "GitLab",
+      "producto": "Community Edition and Enterprise Edition",
+      "fecha_inclusion": "2026-10-29",
+      "descripcion": "GitLab Community Edition and Enterprise Edition contain a integer overflow or wraparound vulnerability that could allow an unauthenticated user to execute arbitrary code on the GitLab server via a specially crafted regular expression in a CI/CD configuration, due to insufficient regular expression validation."
+    }
+  ],
+  "modificadas": [],
+  "retiradas": [],
+  "advertencia": "Son cambios del catálogo CISA. No confirman afectación de los activos."
+}

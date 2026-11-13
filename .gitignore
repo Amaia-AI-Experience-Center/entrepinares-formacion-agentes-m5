@@ -1,0 +1,35 @@
+# Secretos y configuracion local (NUNCA subir)
+.env
+.env.*
+!.env.example
+.azure/
+
+# Entornos y caches de Python
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs, temporales y copias de seguridad
+*.log
+*.tmp
+*.bak
+
+# Estado local de emuladores y bloqueos de los scripts
+__azurite_db_*.json
+__queuestorage__/
+datos/.*.lock
+informes/
+
+# Sistema operativo / editores
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
