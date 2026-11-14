@@ -32,7 +32,7 @@
 | Elemento | Estado |
 |---|---|
 | Versiones del agente | v1-v4 sin cambios. **v5** (14/11): mismo código que la v4; solo cambian las 4 referencias SAS. **v6** (14/11): código de la v4/v5 con **dos archivos corregidos** (`v5_blob_runtime.py`, `v5_blob_operaciones.py`); los otros 31 archivos son idénticos a la v4 |
-| Enrutamiento | **Fijado en la v4 (100 %)**; antes era `@latest`. La **v6 está validada pero pendiente de promoción** (requiere confirmación) |
+| Enrutamiento | **Versión publicada: v6 (regla fija `"6"`, 100 %)** desde el 14/11/2026. Antes: `@latest` y, temporalmente, v4 fija. Vuelta atrás: la misma regla con `"4"` |
 | Conexión de la v4 | `entrepinares-v5-sas-21d-20261112`: 4 SAS vigentes hasta el **03/12/2026 15:42 UTC** (lectura `r`, escritura `cw`) |
 | Conexión de la v5 y v6 (y de v2-v3) | `entrepinares-v5-sas`: actualizada el 14/11 con **los mismos 4 SAS vigentes**, mismos campos y metadatos; caduca también el **03/12/2026 15:42 UTC** |
 | KEV activo en Blob | Publicación `20261113T135058Z-17735c10705a4565baae8926ee9e9966`, catálogo **2026.11.10**, 1779 CVE |
@@ -63,11 +63,11 @@
 
 ```powershell
 python scripts\probar_hosted_v5.py --esperar-version 2026.11.10     # inventario, CISA y correlación
-python scripts\probar_hosted_v5.py --version 6 --espera 0            # la v6, sin espera
+python scripts\probar_hosted_v5.py --version 4 --espera 0            # reproduce el defecto en la v4
 python scripts\consultar_kev_blob.py                                 # publicación KEV activa
 python scripts\consultar_kev_blob.py --informe 20261112T122224Z-ef460b7657ca4e2ab756c478c722ff5a
 ```
 
-Mientras el endpoint siga en la v4, el cliente mantiene por defecto una espera de 20 s (solución provisional). Tras promocionar la v6 ya no hará falta (`--espera 0`).
+**Comprobación tras la promoción** (endpoint habitual, sesiones nuevas, sin espera, respuestas servidas por la v6): CISA → `azure_blob_verificado`, 2026.11.10, publicación `20261113T135058Z-17735c10…` ✅ · correlación IT-007 → CVE-2026-124194 ✅ · inventario IT-004 → 11.1.2 ✅. El cliente ya no espera por defecto (`--espera 0`).
 
-**Pendiente:** promocionar la v6 y, después, la prueba completa de generación de informes con aprobación humana (autorización aparte).
+**Pendiente:** la prueba completa de generación de informes con aprobación humana (autorización aparte), que debe dejar en el manifiesto la publicación KEV activa.

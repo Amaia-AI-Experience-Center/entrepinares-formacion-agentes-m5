@@ -142,8 +142,8 @@ def main() -> int:
     parser.add_argument("--pregunta", help="Pregunta libre (de solo lectura).")
     parser.add_argument("--esperar-version", help="Versión CISA esperada en la prueba 'cisa' (p. ej. 2026.11.10).")
     parser.add_argument("--version", help="Versión del agente que se consulta (por defecto, la que recibe el tráfico).")
-    parser.add_argument("--espera", type=int, default=20,
-                        help="Segundos de espera tras arrancar la sesión antes de las preguntas KEV (0 = sin espera).")
+    parser.add_argument("--espera", type=int, default=0,
+                        help="Espera opcional (s) antes de las preguntas KEV. Solo era necesaria con versiones anteriores a la v6.")
     args = parser.parse_args()
 
     _cargar_env()
@@ -196,11 +196,10 @@ def main() -> int:
     esperado_ya = False
     for nombre, caso in casos.items():
         if nombre in ("cisa", "correlacion", "libre") and args.espera > 0 and not esperado_ya:
-            # SOLUCION PROVISIONAL de un defecto conocido de Hosted V5 (docs/HOSTED_V5.md):
-            # la cache KEV devuelve "sin paquete" durante los primeros 15 s de cada sandbox.
+            # Solo para reproducir el defecto de cache de versiones anteriores a la v6 (docs/HOSTED_V5.md).
             if "inventario" not in casos:
                 preguntar(cliente, PRUEBAS["inventario"]["pregunta"], sesion)  # arranca el sandbox
-            print(f"\n(espera de {args.espera} s tras el arranque del sandbox: defecto conocido, ver docs/HOSTED_V5.md)")
+            print(f"\n(espera de {args.espera} s solicitada con --espera)")
             time.sleep(args.espera)
             esperado_ya = True
         print("\n" + "=" * 72)
