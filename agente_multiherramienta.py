@@ -6,7 +6,7 @@ import sys
 
 from agent_framework import Agent, tool
 from agent_framework.foundry import FoundryChatClient
-from azure.identity import ClientSecretCredential
+from azure.identity import AzureCliCredential
 
 from fuente_kev import obtener_catalogo
 from inventario import leer_inventario
@@ -786,12 +786,7 @@ async def main(modo_evaluacion: bool = False):
     client = FoundryChatClient(
         project_endpoint=os.environ.get("FOUNDRY_PROJECT_ENDPOINT", ""),
         model=os.environ.get("AZURE_AI_MODEL_DEPLOYMENT_NAME", "gpt-4.1-mini"),
-        # Autenticacion NO interactiva (aplicacion de Entra ID); sin Azure CLI.
-        credential=ClientSecretCredential(
-            tenant_id=os.environ["AZURE_TENANT_ID"],
-            client_id=os.environ["AZURE_CLIENT_ID"],
-            client_secret=os.environ["AZURE_CLIENT_SECRET"],
-        ),
+        credential=AzureCliCredential(),
     )
 
     agente = Agent(

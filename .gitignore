@@ -27,6 +27,7 @@ __azurite_db_*.json
 __queuestorage__/
 datos/.*.lock
 informes/
+salidas/
 
 # Sistema operativo / editores
 Thumbs.db

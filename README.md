@@ -1,69 +1,52 @@
 # Entrepinares · Formación en agentes de IA (Microsoft Agent Framework)
 
-Repositorio **privado** de formación. Aprenderás cómo funciona un workflow de **tres agentes** construido con Microsoft Agent Framework (MAF) que analiza vulnerabilidades de un **inventario ficticio** IT/OT cruzándolo con el catálogo público CISA KEV.
+Repositorio **privado** de formación. Aprenderás cómo funciona un workflow de **tres agentes** construido con Microsoft Agent Framework (MAF): analiza vulnerabilidades de un **inventario ficticio** IT/OT cruzándolo con el catálogo público CISA KEV. El mismo workflow está desplegado como agente **Hosted V5** en Microsoft Foundry.
 
-## Cómo empezar: GitHub Codespaces (recomendado)
+## Inicio rápido (Windows, PowerShell)
 
-1. Entra en el repositorio con tu cuenta autorizada.
-2. **Code → Codespaces → Create codespace on main**.
-3. Espera a que termine la preparación automática (terminal: `Codespace listo`).
-4. Abre `notebooks/entrepinares_01_fundamentos_offline.ipynb` y pulsa **Run All**. 🟢 No necesita credenciales.
+```powershell
+git clone https://github.com/Amaia-AI-Experience-Center/entrepinares-formacion-agentes-m5.git
+cd entrepinares-formacion-agentes-m5
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.lock.txt
+python scripts\verificar_entorno.py       # debe terminar en "Entorno coherente"
+code .                                    # abre notebooks\ y ejecuta el Cuaderno 1
+```
 
-Para el **Cuaderno 2** hacen falta cinco *Codespaces Secrets* (conexión **no interactiva** a Foundry, sin Azure CLI ni inicio de sesión de cuentas personales). Todo el recorrido, con comprobaciones y soluciones a errores: **[`docs/GUIA_INSTALACION_Y_EJECUCION.md`](docs/GUIA_INSTALACION_Y_EJECUCION.md)**.
+Para el Cuaderno 2, DevUI y Hosted: `az login` en tu ordenador, copia `.env.example` a `.env` y rellena el endpoint de tu proyecto Foundry. Todo el recorrido, con resultados esperados y soluciones: **[`docs/GUIA_INSTALACION_Y_EJECUCION.md`](docs/GUIA_INSTALACION_Y_EJECUCION.md)**.
 
 ## Qué contiene
 
 | Qué | Dónde |
 |---|---|
-| **Cuaderno 1:** fundamentos, **sin conexión** 🟢 | `notebooks/entrepinares_01_fundamentos_offline.ipynb` |
-| **Cuaderno 2:** el workflow con Foundry 🔴 | `notebooks/entrepinares_02_workflow_foundry.ipynb` |
-| **Guía de instalación y ejecución** | [`docs/GUIA_INSTALACION_Y_EJECUCION.md`](docs/GUIA_INSTALACION_Y_EJECUCION.md) |
-| Entorno de Codespaces | `.devcontainer/` |
-| El workflow | `orquestacion_entrepinares_sin_puentes_PROPUESTA_CORRECCION.py` |
-| Módulos y datos ficticios | `*.py` de la raíz y `datos/` |
-| Adaptador y pruebas | `notebooks/entrepinares_utils.py`, `notebooks/tests/` |
+| **Cuaderno 1:** fundamentos, herramientas, cribado, criticidad, informe local, **sin Azure** | `notebooks/entrepinares_01_fundamentos_offline.ipynb` |
+| **Cuaderno 2:** el workflow multiagente con `gpt-4.1-mini` en Foundry | `notebooks/entrepinares_02_workflow_foundry.ipynb` |
+| Guía paso a paso | `docs/GUIA_INSTALACION_Y_EJECUCION.md` |
+| Hosted V5: ciclo, permisos y estado verificado | `docs/HOSTED_V5.md` |
+| Cliente de solo lectura para Hosted V5 | `scripts/probar_hosted_v5.py` |
+| Lectura del KEV activo y de manifiestos de informes en Blob | `scripts/consultar_kev_blob.py` |
 | DevUI (bonus) y verificación del entorno | `scripts/lanzar_devui.py`, `scripts/verificar_entorno.py` |
-| Qué cambió respecto al proyecto original | [`docs/CAMBIOS_RESPECTO_AL_ORIGINAL.md`](docs/CAMBIOS_RESPECTO_AL_ORIGINAL.md) |
+| Workflow, módulos y datos ficticios | `orquestacion_entrepinares_sin_puentes_PROPUESTA_CORRECCION.py`, `*.py`, `datos/` |
+| Adaptador de los cuadernos y pruebas | `notebooks/entrepinares_utils.py`, `notebooks/tests/` |
+| Diferencias con el proyecto original | `docs/CAMBIOS_RESPECTO_AL_ORIGINAL.md` |
 
-🟢 = funciona sin credenciales ni Azure · 🔴 = necesita credenciales y consume recursos de Azure.
+## Autenticación y permisos
 
-## Autenticación
-
-El workflow se autentica con una **aplicación de Microsoft Entra ID** (`ClientSecretCredential`), no con la sesión de ninguna persona. Variables (todas como *Codespaces Secrets*):
-
-`FOUNDRY_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME`, `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`.
-
-`.env.example` es solo una plantilla con valores ficticios. **Una API key no puede sustituir a esta credencial** con el cliente actual (`FoundryChatClient` solo admite credenciales de Microsoft Entra ID); los motivos están en `docs/CAMBIOS_RESPECTO_AL_ORIGINAL.md`.
+- Se usa **tu sesión de Azure CLI** (`AzureCliCredential`): no hay claves ni secretos en el repositorio.
+- `az login` **no concede permisos**. Para el Cuaderno 2 necesitas un rol en el proyecto Foundry que permita usar el modelo; para Hosted, uno que permita invocar agentes; para leer Blob, uno de lectura de datos (`docs/HOSTED_V5.md`).
+- Si un permiso falta, verás el error real; nada se sustituye por simulaciones.
 
 ## Garantías de seguridad
 
-- Los datos son **ficticios** (inventario) o **públicos** (catálogo CISA KEV). No hay datos corporativos reales.
-- El workflow se construye **siempre en solo lectura**: no registra herramientas de escritura.
-- Las **descargas de CISA están bloqueadas** y cada cuaderno comprueba con SHA-256 que `datos/` no cambia.
-- **No hay secretos en el repositorio**, ni se necesitan para crear el Codespace ni para el Cuaderno 1. Los cuadernos nunca imprimen valores secretos.
-- DevUI solo escucha en `127.0.0.1`; el puerto 8091 se reenvía en modo **privado** y con autenticación por defecto.
-
-## Estructura
-
-```
-├── README.md
-├── .devcontainer/        devcontainer.json y post-create.sh (Codespaces)
-├── docs/                 guía de instalación y cambios respecto al original
-├── notebooks/            los dos cuadernos, el adaptador y sus pruebas
-├── scripts/              verificar_entorno.py, lanzar_devui.py
-├── datos/                inventario ficticio y copia del catálogo CISA KEV
-├── orquestacion_entrepinares_sin_puentes_PROPUESTA_CORRECCION.py   el workflow
-├── agente_multiherramienta.py, fuente_kev.py, inventario.py, ...    módulos
-├── requirements-codespaces.lock.txt   instalación exacta en Linux (Codespaces)
-├── requirements-notebook.lock.txt     instalación exacta en Windows (alternativa local)
-├── requirements.lock.txt              solo el workflow, sin Jupyter (Windows)
-├── requirements.txt                   dependencias directas (referencia)
-└── .env.example
-```
+- Datos **ficticios** (inventario) o **públicos** (catálogo CISA KEV).
+- El workflow local se construye **siempre en solo lectura**: no registra herramientas de escritura. El cliente Hosted nunca aprueba escrituras.
+- Las **descargas de CISA están bloqueadas** y los cuadernos comprueban con SHA-256 que `datos/` no cambia. Los informes de ejercicio se guardan en `salidas/` (ignorada por Git).
+- DevUI solo escucha en `127.0.0.1`, con autenticación por defecto.
 
 ## Pruebas
 
-```bash
+```powershell
 python -B -m unittest discover -s notebooks/tests -v
 ```
-Pruebas **sin red y sin credenciales**: comprueban el adaptador, la autenticación con credenciales simuladas, el `devcontainer`, los locks y la estructura de los cuadernos (limpios, sin secretos, de solo lectura). **No validan** servicios de Azure ni un Codespace real.
+21 pruebas **sin red ni credenciales** (adaptador, autenticación, informe local, cliente Hosted y estructura de los cuadernos). No sustituyen a ejecutar los cuadernos ni a las consultas reales.

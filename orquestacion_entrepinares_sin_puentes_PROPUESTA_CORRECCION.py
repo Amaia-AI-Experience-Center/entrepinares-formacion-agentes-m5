@@ -71,7 +71,7 @@ from agent_framework import (
     tool,
 )
 from agent_framework.foundry import FoundryChatClient
-from azure.identity import ClientSecretCredential
+from azure.identity import AzureCliCredential
 from pydantic import BaseModel, Field
 from typing_extensions import Never
 
@@ -827,37 +827,25 @@ def _existe_activo(asset_id: str) -> bool:
 # Construccion (separada de la ejecucion)
 # ---------------------------------------------------------------------------
 
-VARIABLES_AUTENTICACION = ("AZURE_TENANT_ID", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET")
+def crear_credencial() -> AzureCliCredential:
+    """Sesion de Azure CLI del usuario (`az login` en su propio ordenador).
 
-
-def crear_credencial() -> ClientSecretCredential:
-    """Credencial NO interactiva: una aplicacion de Microsoft Entra ID.
-
-    COPIA DIDACTICA: sustituye a la autenticacion con Azure CLI. Lee tres
-    variables de entorno (en Codespaces: Codespaces Secrets). Nunca imprime
-    ni registra sus valores; los errores solo citan los NOMBRES.
+    COPIA DIDACTICA: si AZURE_TENANT_ID esta definido, se pide el token de ese
+    tenant. Autenticarse NO concede permisos: el usuario necesita un rol en el
+    proyecto Foundry.
     """
-    faltan = [n for n in VARIABLES_AUTENTICACION if not os.environ.get(n, "").strip()]
-    if faltan:
-        raise RuntimeError(
-            "Faltan variables de autenticacion: " + ", ".join(faltan) + ". "
-            "Definelas como Codespaces Secrets (ver docs/GUIA_INSTALACION_Y_EJECUCION.md)."
-        )
-    return ClientSecretCredential(
-        tenant_id=os.environ["AZURE_TENANT_ID"].strip(),
-        client_id=os.environ["AZURE_CLIENT_ID"].strip(),
-        client_secret=os.environ["AZURE_CLIENT_SECRET"].strip(),
-    )
+    tenant = os.environ.get("AZURE_TENANT_ID", "").strip()
+    return AzureCliCredential(tenant_id=tenant) if tenant else AzureCliCredential()
 
 
 def crear_cliente() -> FoundryChatClient:
     # Se relee el entorno en cada llamada (un .env cargado despues del import
-    # tambien funciona). Sin endpoint ni credenciales no se intenta ninguna conexion.
+    # tambien funciona). Sin endpoint no se intenta ninguna conexion.
     endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT", "") or PROJECT_ENDPOINT
     if not endpoint:
         raise RuntimeError(
-            "Falta FOUNDRY_PROJECT_ENDPOINT. Definelo como Codespaces Secret "
-            "(o en .env) con el endpoint de TU proyecto Foundry (ver la guia)."
+            "Falta FOUNDRY_PROJECT_ENDPOINT. Copia .env.example a .env y rellena "
+            "el endpoint de TU proyecto Foundry (ver la guia)."
         )
     return FoundryChatClient(
         project_endpoint=endpoint,

@@ -16,6 +16,7 @@ import hashlib
 import importlib
 import json
 import os
+import shutil
 import sys
 import time
 from dataclasses import dataclass, field
@@ -61,14 +62,12 @@ def comprobar_configuracion() -> dict[str, Any]:
     """Comprueba la configuracion local SIN llamadas de red."""
     endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT", "").strip()
     host = urlparse(endpoint).hostname if endpoint else None
-    auth = {n: bool(os.environ.get(n, "").strip()) for n in VARIABLES_AUTENTICACION}
     return {
         "endpoint_configurado": bool(endpoint),
         "host_endpoint": host,
         "modelo": os.environ.get("AZURE_AI_MODEL_DEPLOYMENT_NAME", "") or "gpt-4.1-mini",
-        # Solo se informa de si cada variable EXISTE; nunca de su valor.
-        "autenticacion": auth,
-        "autenticacion_completa": all(auth.values()),
+        "tenant_indicado": bool(os.environ.get("AZURE_TENANT_ID", "").strip()),
+        "az_en_path": shutil.which("az") is not None,
         "archivo_env_existe": (RAIZ / ".env").is_file(),
     }
 
@@ -77,20 +76,62 @@ def construir_workflow_sin_conexion(modulo=None):
     """Workflow de solo lectura con un cliente que NUNCA se usa (sin red).
 
     Sirve para explicar la estructura del grafo sin Foundry: construir el
-    cliente no abre ninguna conexion.
+    cliente no abre ninguna conexion ni pide tokens.
     """
     modulo = modulo or preparar_entorno()
     cliente = modulo.FoundryChatClient(
         project_endpoint=ENDPOINT_SIN_CONEXION,
         model=modulo.MODEL,
-        # Credencial FICTICIA: nunca se usa para pedir tokens.
-        credential=modulo.ClientSecretCredential(
-            tenant_id="00000000-0000-0000-0000-000000000000",
-            client_id="00000000-0000-0000-0000-000000000000",
-            client_secret="ficticio-sin-conexion",
-        ),
+        credential=modulo.AzureCliCredential(),  # no se usa: el cliente nunca llama al modelo
     )
     return modulo.construir_workflow(cliente, acciones_interactivas=False)
+
+
+# ---------------------------------------------------------------------------
+# Informe local de ejercicio (carpeta ignorada por Git)
+# ---------------------------------------------------------------------------
+
+CARPETA_SALIDAS = RAIZ / "salidas"
+
+
+def generar_informe_local(destino: Path | None = None) -> dict[str, Path]:
+    """Genera el informe Markdown + HTML con los modulos ORIGINALES, pero en
+    `salidas/` (ignorada por Git) en lugar de `informes/`.
+
+    Solo se redirigen las rutas de salida; la logica de los informes no cambia.
+    Requiere haber llamado antes a preparar_entorno() (descargas CISA bloqueadas).
+    """
+    import generar_html
+    import generar_informe
+
+    destino = Path(destino) if destino else CARPETA_SALIDAS
+    destino.mkdir(parents=True, exist_ok=True)
+    md = destino / "informe_vulnerabilidades.md"
+    html = destino / "informe_vulnerabilidades.html"
+    originales = (generar_informe.RUTA_INFORME, generar_html.ORIGEN, generar_html.DESTINO)
+    try:
+        generar_informe.RUTA_INFORME = md
+        generar_html.ORIGEN, generar_html.DESTINO = md, html
+        generar_informe.generar_informe()
+        generar_html.generar_html()
+    finally:
+        generar_informe.RUTA_INFORME, generar_html.ORIGEN, generar_html.DESTINO = originales
+    return {"markdown": md, "html": html}
+
+
+def evidencias_datos() -> dict[str, Any]:
+    """Procedencia de los datos guardados: version CISA, fecha y origen del cribado."""
+    cache = json.loads((RAIZ / "datos" / "cisa_kev_cache.json").read_text(encoding="utf-8"))
+    cribado = json.loads((RAIZ / "datos" / "cribado_kev.json").read_text(encoding="utf-8"))
+    return {
+        "catalogo_cisa": {
+            "version": cache["catalogo"]["catalogVersion"],
+            "total_cve": cache["catalogo"]["count"],
+            "obtenido_en_utc": cache["obtenido_en_utc"],
+            "fuente": cache.get("fuente"),
+        },
+        "cribado": {"fuente": cribado.get("fuente"), "resumen": cribado.get("resumen")},
+    }
 
 
 def diagrama_mermaid(workflow) -> str:
@@ -226,7 +267,7 @@ async def ejecutar_consulta(pregunta: str, *, workflow=None, modulo=None) -> Tra
     """Ejecuta UNA consulta y devuelve la traza estructurada.
 
     Por defecto construye un workflow nuevo de solo lectura (llama a Foundry,
-    necesita FOUNDRY_PROJECT_ENDPOINT y las variables AZURE_*). Se puede inyectar un
+    necesita FOUNDRY_PROJECT_ENDPOINT y `az login`). Se puede inyectar un
     `workflow` propio (por ejemplo, en las pruebas).
     """
     if workflow is None:
@@ -264,51 +305,49 @@ async def ejecutar_consulta(pregunta: str, *, workflow=None, modulo=None) -> Tra
     return traza
 
 
-VARIABLES_AUTENTICACION = ("AZURE_TENANT_ID", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET")
-_VARIABLES_SECRETAS = ("AZURE_CLIENT_SECRET", "DEVUI_AUTH_TOKEN")
+_VARIABLES_SECRETAS = ("DEVUI_AUTH_TOKEN",)
 
 
 def _ocultar_secretos(texto: str) -> str:
-    """Sustituye por *** cualquier valor secreto del entorno que aparezca en un texto."""
+    """Sustituye por *** cualquier valor secreto del entorno o token que aparezca en un texto."""
+    import re
+
     for nombre in _VARIABLES_SECRETAS:
         valor = os.environ.get(nombre, "")
         if len(valor) >= 4:
             texto = texto.replace(valor, "***")
-    return texto
+    texto = re.sub(r"eyJ[A-Za-z0-9_\-.]{20,}", "***", texto)
+    return re.sub(r"(sig|se|sp|sv)=[^&\s\"']+", r"\1=***", texto)
 
 
 def probar_credencial() -> dict[str, Any]:
-    """Pide UN token a Microsoft Entra ID con las variables AZURE_* (operacion opcional).
+    """Pide UN token para Foundry con tu sesion de Azure CLI (operacion opcional).
 
-    Es una peticion de autenticacion: NO usa el modelo ni consume cuota. Nunca
-    devuelve ni imprime el token; solo si funciona y cuando caduca.
+    No usa el modelo ni consume cuota. Nunca devuelve ni imprime el token.
+    Que funcione NO demuestra que tengas permisos en el proyecto Foundry.
     """
     from datetime import datetime, timezone
 
     modulo = preparar_entorno()
     token = modulo.crear_credencial().get_token("https://ai.azure.com/.default")
     caduca = datetime.fromtimestamp(token.expires_on, tz=timezone.utc).isoformat()
-    return {"autenticacion_correcta": True, "el_token_caduca_utc": caduca}
+    return {"token_obtenido": True, "el_token_caduca_utc": caduca}
 
 
 def explicar_error(exc: BaseException) -> str:
     """Traduce los fallos tipicos de conexion a una pista accionable (sin secretos)."""
     nombre = type(exc).__name__
     texto = _ocultar_secretos(str(exc))
-    if "Faltan variables de autenticacion" in texto:
-        return texto.split(". Definelas")[0] + ". Defínelas como Codespaces Secrets y reinicia el Codespace."
     if "FOUNDRY_PROJECT_ENDPOINT" in texto:
-        return "Falta el endpoint: define FOUNDRY_PROJECT_ENDPOINT como Codespaces Secret."
-    if "AADSTS7000215" in texto or "invalid_client" in texto or "AADSTS7000222" in texto:
-        return "El client secret no es válido o ha caducado: pide uno nuevo y actualiza el secreto AZURE_CLIENT_SECRET."
-    if "AADSTS700016" in texto:
-        return "No se encuentra la aplicación: revisa AZURE_CLIENT_ID (¿es del mismo tenant?)."
-    if "AADSTS90002" in texto or "AADSTS900023" in texto:
-        return "Tenant no válido: revisa AZURE_TENANT_ID."
-    if "ClientAuthenticationError" in nombre or "AADSTS" in texto:
-        return "Microsoft Entra ID rechazó la autenticación: revisa AZURE_TENANT_ID, AZURE_CLIENT_ID y AZURE_CLIENT_SECRET."
+        return "Falta el endpoint: copia .env.example a .env y rellena FOUNDRY_PROJECT_ENDPOINT; reinicia el kernel."
+    if ("CredentialUnavailable" in nombre or "az login" in texto.lower()
+            or "AzureCliCredential" in texto or "Azure CLI not found" in texto):
+        return "Azure CLI no tiene sesión válida: ejecuta `az login` en una terminal y reinicia el kernel."
+    if "AADSTS" in texto and ("tenant" in texto.lower() or "AADSTS50020" in texto or "AADSTS90002" in texto):
+        return "El tenant no es el correcto: `az login --tenant <id>` o define AZURE_TENANT_ID en .env."
     if "401" in texto or "403" in texto or "PermissionDenied" in texto or "AuthorizationFailed" in texto:
-        return "La aplicación se autenticó pero no tiene permiso en el proyecto Foundry: el administrador debe asignarle el rol de acceso al modelo (normalmente 'Azure AI User')."
+        return ("Te has autenticado, pero tu usuario no tiene permisos en el proyecto Foundry: "
+                "pide un rol que permita usar el modelo (normalmente 'Azure AI User').")
     if "404" in texto or "DeploymentNotFound" in texto:
         return "No se encuentra el modelo: revisa AZURE_AI_MODEL_DEPLOYMENT_NAME y el endpoint."
     if "429" in texto or "RateLimit" in nombre:
