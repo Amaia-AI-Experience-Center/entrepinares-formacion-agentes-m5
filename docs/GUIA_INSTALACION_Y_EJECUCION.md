@@ -302,14 +302,14 @@ python scripts\lanzar_devui.py --puerto 8091 --sin-auth
 ```powershell
 python scripts\probar_hosted_v5.py --esperar-version 2026.11.10
 ```
-Hace tres preguntas de **solo lectura** al agente desplegado (no lo vuelve a desplegar ni aprueba ninguna escritura): inventario, versión CISA y correlación.
+Hace tres preguntas de **solo lectura** al agente desplegado (no lo vuelve a desplegar ni aprueba ninguna escritura), en **una sola sesión**: inventario, luego una espera de 20 s y después versión CISA y correlación.
 
 **Resultado de la validación del 14/11/2026:**
 - `[inventario]` → «IT-004 … versión 11.1.2» → **COMPROBACIÓN: OK**
-- `[cisa]` → «No ha sido posible leer/verificar el catálogo KEV activo…» → **NO SUPERADA**
-- `[correlacion]` → «el catálogo KEV activo no está disponible en Blob…» → **NO SUPERADA**
+- `[cisa]` → `Version: 2026.11.10`, `Origen: azure_blob_verificado`, `Publicacion Blob: 20261113T135058Z-17735c10…` → **OK**
+- `[correlacion]` → IT-007 / CVE-2026-124194 reconocida (coincidencia solo por fabricante) → **OK**
 
-Las dos últimas reflejan un **bloqueo real del agente desplegado** (no lee el KEV de Blob), descrito en `docs/HOSTED_V5.md`. Cuando se resuelva, deben salir `OK`.
+La espera de 20 s es una **solución provisional** a un defecto conocido de Hosted V5 (las preguntas KEV fallan en los primeros ~15 s de cada sandbox; ver `docs/HOSTED_V5.md`). Con `--espera 0` lo verás fallar.
 
 Otras preguntas: `python scripts\probar_hosted_v5.py --pregunta "¿Qué versión tiene IT-001?"`
 

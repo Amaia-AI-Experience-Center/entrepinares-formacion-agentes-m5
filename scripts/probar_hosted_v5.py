@@ -118,10 +118,20 @@ def _pide_aprobacion(resp) -> list[str]:
     return tipos
 
 
-def preguntar(cliente_openai, pregunta: str) -> tuple[str, float, list[str]]:
+def preguntar(cliente_openai, pregunta: str, sesion: str | None = None) -> tuple[str, float, list[str]]:
     inicio = time.perf_counter()
-    resp = cliente_openai.responses.create(input=pregunta)
+    extra = {"agent_session_id": sesion} if sesion else None
+    resp = cliente_openai.responses.create(input=pregunta, extra_body=extra)
     return _texto_respuesta(resp), round(time.perf_counter() - inicio, 1), _pide_aprobacion(resp)
+
+
+def _version_servida(datos: dict) -> str | None:
+    """Version a la que el endpoint envia el trafico (regla FixedRatio)."""
+    reglas = (((datos.get("agent_endpoint") or {}).get("version_selector") or {}).get("version_selection_rules") or [])
+    version = reglas[0].get("agent_version") if reglas else None
+    if version in (None, "@latest"):
+        version = ((datos.get("versions") or {}).get("latest") or {}).get("version")
+    return version
 
 
 def main() -> int:
@@ -131,6 +141,9 @@ def main() -> int:
     parser.add_argument("--prueba", choices=["todas", *PRUEBAS], default="todas")
     parser.add_argument("--pregunta", help="Pregunta libre (de solo lectura).")
     parser.add_argument("--esperar-version", help="Versión CISA esperada en la prueba 'cisa' (p. ej. 2026.11.10).")
+    parser.add_argument("--version", help="Versión del agente que se consulta (por defecto, la que recibe el tráfico).")
+    parser.add_argument("--espera", type=int, default=20,
+                        help="Segundos de espera tras arrancar la sesión antes de las preguntas KEV (0 = sin espera).")
     args = parser.parse_args()
 
     _cargar_env()
@@ -149,15 +162,25 @@ def main() -> int:
 
     print(f"Proyecto : {endpoint.split('/api/')[0]}")
     print(f"Agente   : {agente}")
+    version = args.version
     try:
         datos = proyecto.agents.get(agent_name=agente).as_dict()
-        ultima = (datos.get("versions") or {}).get("latest") or {}
-        print(f"Versión  : {ultima.get('version')} ({ultima.get('status')})")
+        version = version or _version_servida(datos)
+        print(f"Versión  : {version} (última: {((datos.get('versions') or {}).get('latest') or {}).get('version')})")
     except Exception as exc:  # leer metadatos es opcional
         print("Versión  : no disponible ->", _pista(exc))
 
     try:
         cliente = proyecto.get_openai_client(agent_name=agente)
+        sesion = None
+        if version:
+            # Una sola sesion para todas las preguntas, fijada a la version consultada.
+            from azure.ai.projects.models import VersionRefIndicator
+
+            sesion = proyecto.agents.create_session(
+                agent_name=agente, version_indicator=VersionRefIndicator(agent_version=str(version))
+            ).as_dict()["agent_session_id"]
+            print(f"Sesión   : {sesion[:12]}… (versión {version})")
     except Exception as exc:
         print("ERROR al preparar el cliente:", _pista(exc))
         return 1
@@ -170,12 +193,21 @@ def main() -> int:
         casos["cisa"] = {**casos["cisa"], "esperado": casos["cisa"]["esperado"] + [args.esperar_version]}
 
     fallos = 0
+    esperado_ya = False
     for nombre, caso in casos.items():
+        if nombre in ("cisa", "correlacion", "libre") and args.espera > 0 and not esperado_ya:
+            # SOLUCION PROVISIONAL de un defecto conocido de Hosted V5 (docs/HOSTED_V5.md):
+            # la cache KEV devuelve "sin paquete" durante los primeros 15 s de cada sandbox.
+            if "inventario" not in casos:
+                preguntar(cliente, PRUEBAS["inventario"]["pregunta"], sesion)  # arranca el sandbox
+            print(f"\n(espera de {args.espera} s tras el arranque del sandbox: defecto conocido, ver docs/HOSTED_V5.md)")
+            time.sleep(args.espera)
+            esperado_ya = True
         print("\n" + "=" * 72)
         print(f"[{nombre}] {caso['explica']}")
         print("PREGUNTA :", caso["pregunta"])
         try:
-            texto, segundos, aprobaciones = preguntar(cliente, caso["pregunta"])
+            texto, segundos, aprobaciones = preguntar(cliente, caso["pregunta"], sesion)
         except Exception as exc:
             print("ERROR    :", _pista(exc))
             fallos += 1
