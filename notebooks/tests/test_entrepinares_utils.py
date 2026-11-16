@@ -261,7 +261,11 @@ class RepositorioTest(unittest.TestCase):
     def test_sin_codespaces_ni_autenticacion_por_aplicacion(self):
         self.assertFalse((RAIZ / ".devcontainer").exists())
         self.assertFalse((RAIZ / "requirements-codespaces.lock.txt").exists())
-        for ruta in list(RAIZ.glob("*.py")) + list((RAIZ / "scripts").glob("*")) + [NOTEBOOKS / "entrepinares_utils.py"]:
+        scripts = [
+            p for p in (RAIZ / "scripts").glob("*")
+            if p.is_file() and p.suffix not in {".pyc", ".pyo"}  # ignora __pycache__ y compilados
+        ]
+        for ruta in list(RAIZ.glob("*.py")) + scripts + [NOTEBOOKS / "entrepinares_utils.py"]:
             texto = ruta.read_text(encoding="utf-8")
             self.assertNotIn("ClientSecretCredential", texto, ruta.name)
             self.assertNotIn("AZURE_CLIENT_SECRET", texto, ruta.name)

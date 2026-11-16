@@ -151,6 +151,12 @@ code .
 
 Si prefieres JupyterLab: `python -m jupyterlab` y abre la carpeta `notebooks`.
 
+> ⚠️ **VS Code no ofrece kernels o las celdas no se ejecutan (Workspace Trust).** Si la carpeta no está marcada como confiable, VS Code abre el workspace en **modo restringido** y deja deshabilitadas para él extensiones como **Python** y **Jupyter**, aunque estén instaladas.
+> 1. Comprueba si aparece **«Modo restringido»** en la barra de estado o en la parte superior, o ejecuta *Ctrl+Shift+P → Workspaces: Manage Workspace Trust*.
+> 2. Solo si confías en el repositorio (lo has clonado tú desde el origen oficial), pulsa **Trust** / **Confiar**.
+> 3. En la vista **Extensiones** (*Ctrl+Shift+X*), busca **Python** y **Jupyter**; si indican que están deshabilitadas para este workspace, pulsa **Enable (Workspace)** / **Habilitar (área de trabajo)**.
+> 4. Recarga la ventana (*Ctrl+Shift+P → Developer: Reload Window*) y vuelve a elegir el kernel `.venv`.
+
 **Resultado esperado:**
 
 | Apartado | Qué ves |

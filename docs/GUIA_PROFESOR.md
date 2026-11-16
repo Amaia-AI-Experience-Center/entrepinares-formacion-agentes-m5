@@ -233,7 +233,7 @@ El agente se llama `entrepinares-itot-v5-lab`. «V5» es la arquitectura, con KE
 | | Local | Hosted V6 |
 |---|---|---|
 | Catálogo | Histórico `2026.10.30` | Activo en Blob, dinámico |
-| Escritura | Imposible | Dos herramientas, siempre con aprobación humana |
+| Escritura | Los agentes no tienen herramientas de escritura administrativa (CISA, Blob). El Cuaderno 1 sí genera un informe de ejercicio en `salidas\`, ignorado por Git | Dos herramientas, siempre con aprobación humana |
 | Identidad | Tu `az login` | Identidad del agente |
 
 **Decir:** «El mismo cerebro de tres agentes, pero viviendo en la nube, leyendo un catálogo que se puede actualizar y con permiso para escribir, siempre que una persona apruebe cada escritura. Cada petición construye un workflow nuevo, con los mismos cuatro nodos y el mismo contrato.»
@@ -313,7 +313,7 @@ Enséñalo con evidencias; no lo ejecutes (ver el anexo). Fueron pruebas autoriz
 2. **Candidata no es lo mismo que vulnerabilidad confirmada.** Y «confirmada», aquí, es «según nuestra regla sobre un inventario ficticio».
 3. **Contrato tipado y aristas condicionales:** la ruta es un dato validado, y el grafo pone las barreras.
 4. **El enrutamiento varía, y el LLM puede generalizar de más:** leed la traza, no solo la respuesta.
-5. **Mínimo privilegio y HITL:** en local no hay herramientas de escritura; en Hosted las hay, pero solo con aprobación humana.
+5. **Mínimo privilegio y HITL:** en local los agentes no tienen herramientas de escritura administrativa (solo se genera el informe de ejercicio en `salidas\`); en Hosted las hay, pero solo con aprobación humana.
 6. **Trazabilidad:** hay un catálogo histórico y uno activo con versiones y puntero, y cada informe dice con qué datos se hizo.
 
 ---
