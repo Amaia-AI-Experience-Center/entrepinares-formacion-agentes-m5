@@ -1,6 +1,6 @@
 # Entrepinares · Formación en agentes de IA (Microsoft Agent Framework)
 
-Repositorio **privado** de formación. Aprenderás cómo funciona un workflow de **tres agentes** construido con Microsoft Agent Framework (MAF): analiza vulnerabilidades de un **inventario ficticio** IT/OT cruzándolo con el catálogo público CISA KEV. El mismo workflow está desplegado como agente **Hosted V5** en Microsoft Foundry.
+Repositorio **privado** de formación. Aprenderás cómo funciona un workflow de **tres agentes** construido con Microsoft Agent Framework (MAF): analiza vulnerabilidades de un **inventario ficticio** IT/OT cruzándolo con el catálogo público CISA KEV. El mismo workflow está desplegado como agente **Hosted V5** en Microsoft Foundry (versión publicada **v6**, que lee el catálogo KEV activo de Azure Blob).
 
 ## Inicio rápido (Windows, PowerShell)
 
@@ -22,7 +22,7 @@ Para el Cuaderno 2, DevUI y Hosted: `az login` en tu ordenador, copia `.env.exam
 |---|---|
 | **Cuaderno 1:** fundamentos, herramientas, cribado, criticidad, informe local, **sin Azure** | `notebooks/entrepinares_01_fundamentos_offline.ipynb` |
 | **Cuaderno 2:** el workflow multiagente con `gpt-4.1-mini` en Foundry | `notebooks/entrepinares_02_workflow_foundry.ipynb` |
-| Guía paso a paso | `docs/GUIA_INSTALACION_Y_EJECUCION.md` |
+| Guía paso a paso (12 pasos, Windows) | `docs/GUIA_INSTALACION_Y_EJECUCION.md` |
 | Hosted V5: ciclo, permisos y estado verificado | `docs/HOSTED_V5.md` |
 | Cliente de solo lectura para Hosted V5 | `scripts/probar_hosted_v5.py` |
 | Lectura del KEV activo y de manifiestos de informes en Blob | `scripts/consultar_kev_blob.py` |

@@ -51,8 +51,8 @@ PRUEBAS = {
         "pregunta": ("¿Aparece la CVE-2026-124194 en el cribado de CISA KEV del activo IT-007? "
                      "Responde únicamente con lo que devuelva el cribado."),
         "esperado": ["CVE-2026-124194"],
-        "explica": ("Esa CVE solo existe en el cribado del catálogo publicado en Blob el 13/11/2026 "
-                    "(versión 2026.11.10); la copia empaquetada en el agente (2026.11.09) no la contiene."),
+        "explica": ("Esa CVE no está en la copia empaquetada en el agente (2026.11.09): solo aparece "
+                    "si el cribado se recalcula con el catálogo KEV activo publicado en Blob."),
     },
 }
 
