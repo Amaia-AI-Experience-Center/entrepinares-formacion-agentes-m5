@@ -41,6 +41,8 @@ cd C:\Proyectos
 git clone https://github.com/Amaia-AI-Experience-Center/entrepinares-formacion-agentes-m5.git
 cd entrepinares-formacion-agentes-m5
 ```
+> ⚠️ **Usa una ruta corta**, como `C:\Proyectos\entrepinares-formacion-agentes-m5`. Si clonas en una ruta larga, sobre todo dentro de `Documents` u OneDrive, la instalación del paso 3 puede fallar. Algunas dependencias, como JupyterLab, crean archivos con rutas muy largas, y Windows las rechaza si no tiene habilitado el soporte de rutas largas. El error es `OSError: [Errno 2] No such file or directory` y va acompañado de una pista sobre *Long Path support*.
+
 **Resultado esperado:** `Cloning into 'entrepinares-formacion-agentes-m5'...` sin errores. Como el repositorio es **privado**, Git puede abrir el navegador para que inicies sesión en GitHub y autorices el SSO de la organización.
 
 **Comprobación:** `dir` muestra `README.md`, `notebooks`, `datos`, `docs`, `scripts` y `requirements.lock.txt`.
@@ -96,6 +98,7 @@ Instala **184 paquetes con versión fija**: Microsoft Agent Framework, DevUI, Ju
 | `No matching distribution found` | No estás usando Python 3.13 de 64 bits: vuelve al paso 2. |
 | Errores `SSL` / `ProxyError` | La red filtra PyPI. Pide el proxy a TI y usa `pip install --proxy http://proxy:puerto -r requirements.lock.txt`. No desactives la verificación SSL. |
 | La instalación se corta | Repite el mismo comando. |
+| `OSError … No such file or directory` con la pista *Long Path support* | La ruta del repositorio es demasiado larga (paso 1). Vuelve a clonar en una ruta corta, como `C:\Proyectos`, y repite desde el paso 2. |
 
 ---
 
@@ -175,6 +178,11 @@ En `.env`, rellena estas variables y guarda:
 
 El `.env` no contiene secretos y está en `.gitignore`.
 
+> ⚠️ **Guarda `.env` en UTF-8 sin BOM.** El Bloc de notas lo hace por defecto (codificación «UTF-8»). En cambio, `Set-Content -Encoding utf8` y `Out-File` de **PowerShell 5.1** añaden un BOM, y entonces el archivo no se lee: verás `Falta FOUNDRY_PROJECT_ENDPOINT` aunque esté relleno. Si lo editaste así, en la raíz y con `(.venv)`, conviértelo:
+> ```powershell
+> python -c "import pathlib; p = pathlib.Path('.env'); p.write_text(p.read_text(encoding='utf-8-sig'), encoding='utf-8')"
+> ```
+
 **Resultado esperado:** el navegador se abre, inicias sesión y la tabla muestra el tenant y la suscripción de la formación.
 
 **Comprobación:** `az account show` no da error. **Esto solo demuestra que tienes sesión, no que tengas permisos.** Los permisos se comprueban en la práctica:
@@ -220,7 +228,7 @@ Al final del cuaderno verás la tabla comparativa, la **variabilidad** (3 repeti
 | Error frecuente | Qué hacer |
 |---|---|
 | `Azure CLI no tiene sesión válida` | Repite el paso 6 y haz *Restart Kernel*. |
-| `Falta el endpoint` | Revisa `.env` (paso 6) y haz *Restart Kernel*. |
+| `Falta el endpoint` | Revisa `.env` (paso 6): debe estar relleno y guardado en UTF-8 sin BOM. Después haz *Restart Kernel*. |
 | `…no tiene permisos en el proyecto Foundry` (401/403) | Te falta el rol 🟠. |
 | `No se encuentra el modelo` (404) | Revisa `AZURE_AI_MODEL_DEPLOYMENT_NAME`. |
 | `Límite de cuota (429)` | Espera un minuto o baja `REPETICIONES`. |
