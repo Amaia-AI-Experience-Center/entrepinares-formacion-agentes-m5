@@ -2,6 +2,22 @@
 
 Con esta guía montas el proyecto **desde cero** en tu ordenador Windows. Después ejecutas los dos cuadernos y DevUI, y consultas el agente **Hosted** (versión publicada **v6**). Todo lo necesario está en el repositorio.
 
+## Local frente a Hosted V6
+
+| | **Local**: cuadernos y DevUI (pasos 5-8) | **Hosted V6**: agente en Foundry (pasos 9-12) |
+|---|---|---|
+| Inventario | Ficticio, `datos/inventario_demo.csv` | El mismo inventario ficticio, empaquetado en el agente |
+| Catálogo CISA KEV | **Histórico** fijo del repositorio: `2026.10.30`, 1766 CVE | **Activo** en Azure Blob, dinámico (el 16/11/2026: `2026.11.13`) |
+| Correlación (cribado) | Se lee el cribado guardado en `datos/` | Se usa el cribado de la publicación activa en Blob, verificada con SHA-256 |
+| Informes | Locales, en `salidas/` (ignorada por Git), con el Cuaderno 1 | Se publican en Blob (`informes/<id>/`) con su `manifest.json` |
+| Actualización de CISA | Bloqueada: se trabaja con la copia histórica | Posible: crea una publicación nueva y mueve el puntero |
+| Aprobación humana (HITL) | No aplica: no hay nada que aprobar | Obligatoria en cada escritura |
+| Herramientas de escritura | **No registradas**: los agentes no pueden escribir | `actualizar_novedades_cisa_controlada` y `generar_informes_controlados`, disponibles solo con aprobación |
+
+- **Local** es una demostración de **solo lectura** para las herramientas de los agentes. La única salida que genera son los informes de práctica en `salidas/`.
+- **Hosted** dispone de herramientas de escritura, que un administrador aprueba una a una desde el **Playground** de Foundry.
+- En esta guía, **Hosted solo se consulta**: el cliente `probar_hosted_v5.py` no aprueba nunca nada.
+
 ## Leyenda
 
 | Símbolo | Tipo de paso |
@@ -291,18 +307,36 @@ Para hacer otras preguntas: `python scripts\probar_hosted_v5.py --pregunta "¿Qu
 
 ## Paso 10 · Comprobar la versión KEV activa y la correlación 🟣
 
-**Comandos:**
+**10.1 Leer el catálogo activo en Blob:**
 ```powershell
 python scripts\consultar_kev_blob.py
-python scripts\probar_hosted_v5.py --prueba cisa --esperar-version <catálogo que muestra el comando anterior>
+```
+Este comando lee, con tu `az login` y **sin SAS**, el **puntero** `control/version_activa.json` y el manifiesto de la publicación activa. Apunta el valor de la línea `Catálogo (puntero)`. Ejemplo del 16/11/2026:
+```
+Publicación activa   : 20261116T072220Z-cc181488b7be49688a2b1d280f6621e7
+Catálogo (puntero)   : 2026.11.13
+```
+
+**10.2 Comprobar que el agente usa ese mismo catálogo.** Pasa a `--esperar-version` el valor apuntado. Con el ejemplo anterior:
+```powershell
+python scripts\probar_hosted_v5.py --prueba cisa --esperar-version 2026.11.13
+```
+Si Blob te ha mostrado otro catálogo, escribe ese valor en lugar de `2026.11.13`. También puedes dejar que PowerShell lo copie por ti:
+```powershell
+$catalogo = ((python scripts\consultar_kev_blob.py | Select-String "puntero\)").ToString() -split ":")[-1].Trim()
+$catalogo
+python scripts\probar_hosted_v5.py --prueba cisa --esperar-version $catalogo
+```
+
+**10.3 Comprobar la correlación con ese catálogo:**
+```powershell
 python scripts\probar_hosted_v5.py --prueba correlacion
 ```
-El primer comando lee, con tu `az login` y **sin SAS**, el **puntero** `control/version_activa.json` y el manifiesto de la publicación activa.
 
 **Resultado esperado:**
-- `Publicación activa`, `Catálogo (puntero)`, `Activada (UTC)` y `validado=True`, con fuente `cisagov/kev-data`.
-- La prueba `cisa` termina en **OK** con la versión que le has pasado.
-- La prueba `correlacion` termina en **OK**.
+- 10.1: `Publicación activa`, `Catálogo (puntero)`, `Activada (UTC)` y `validado=True`, con fuente `cisagov/kev-data`.
+- 10.2: `COMPROBACIÓN: OK` y `Resultado: sin incidencias`.
+- 10.3: `COMPROBACIÓN: OK` (reconoce CVE-2026-124194 en IT-007).
 
 **Comprobación:** la publicación y el catálogo de Blob **coinciden** con los que dio el agente en el paso 9. Eso demuestra que el agente desplegado lee el KEV vigente de Blob desde la **primera** pregunta, y no su copia empaquetada. La v6 corrige el defecto de caché de las versiones anteriores (ver `docs/HOSTED_V5.md`). La correlación de IT-007 confirma que el cribado se recalcula con ese catálogo.
 
